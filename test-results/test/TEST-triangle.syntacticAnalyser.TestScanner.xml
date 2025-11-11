@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="triangle.syntacticAnalyser.TestScanner" tests="7" skipped="0" failures="0" errors="0" timestamp="2025-11-10T22:18:49.759Z" hostname="DESKTOP-H5M862T" time="0.072">
+  <properties/>
+  <testcase name="testIsOperator" classname="triangle.syntacticAnalyser.TestScanner" time="0.007"/>
+  <testcase name="testHi" classname="triangle.syntacticAnalyser.TestScanner" time="0.051"/>
+  <testcase name="testBarDemo" classname="triangle.syntacticAnalyser.TestScanner" time="0.01"/>
+  <testcase name="testHiNewComment2" classname="triangle.syntacticAnalyser.TestScanner" time="0.001"/>
+  <testcase name="testRepeatUntil" classname="triangle.syntacticAnalyser.TestScanner" time="0.001"/>
+  <testcase name="testHiNewComment" classname="triangle.syntacticAnalyser.TestScanner" time="0.001"/>
+  <testcase name="testIsDigit" classname="triangle.syntacticAnalyser.TestScanner" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
