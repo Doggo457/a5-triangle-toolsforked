@@ -1,0 +1,12 @@
+! Test program for double operator **
+let
+    var x: Integer
+in
+    begin
+        x := 5;
+        putint(x);
+        puteol();
+        x**;
+        putint(x);
+        puteol()
+    end

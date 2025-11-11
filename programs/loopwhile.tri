@@ -1,0 +1,16 @@
+! Test program for loop-while-do command
+let
+    var x: Integer
+in
+    begin
+        x := 0;
+        loop
+            begin
+                putint(x);
+                puteol();
+                x := x + 1
+            end
+        while x < 5 do
+            putint(x * 10);
+            puteol()
+    end

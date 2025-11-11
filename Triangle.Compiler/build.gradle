@@ -13,11 +13,20 @@ repositories {
 
 dependencies {
 	implementation project(':Triangle.AbstractMachine')
+	implementation 'info.picocli:picocli:4.7.5'
 	testImplementation group: 'junit', name: 'junit', version: '4.13.2'
 }
 
 application {
-	mainClass = 'Triangle.Compiler'
+	mainClass = 'triangle.Compiler'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'triangle.Compiler'
+        )
+    }
 }
 
 // allow access to programs for unit tests

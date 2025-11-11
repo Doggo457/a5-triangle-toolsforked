@@ -42,6 +42,7 @@ import triangle.abstractSyntaxTrees.commands.CallCommand;
 import triangle.abstractSyntaxTrees.commands.EmptyCommand;
 import triangle.abstractSyntaxTrees.commands.IfCommand;
 import triangle.abstractSyntaxTrees.commands.LetCommand;
+import triangle.abstractSyntaxTrees.commands.LoopWhileCommand;
 import triangle.abstractSyntaxTrees.commands.SequentialCommand;
 import triangle.abstractSyntaxTrees.commands.WhileCommand;
 import triangle.abstractSyntaxTrees.declarations.BinaryOperatorDeclaration;
@@ -182,6 +183,26 @@ public final class Encoder implements ActualParameterVisitor<Frame, Integer>,
 		emitter.patch(jumpAddr);
 		ast.E.visit(this, frame);
 		emitter.emit(OpCode.JUMPIF, Machine.trueRep, Register.CB, loopAddr);
+		return null;
+	}
+
+	@Override
+	public Void visitLoopWhileCommand(LoopWhileCommand ast, Frame frame) {
+		// Execute C1 at least once
+		var loopStart = emitter.getNextInstrAddr();
+		ast.C1.visit(this, frame);
+
+		// Evaluate condition E
+		ast.E.visit(this, frame);
+
+		// If true, execute C2 and jump back to start
+		var jumpAddr = emitter.emit(OpCode.JUMPIF, 0, Register.CB, 0);
+		ast.C2.visit(this, frame);
+		emitter.emit(OpCode.JUMP, 0, Register.CB, loopStart);
+
+		// Patch the conditional jump to exit loop when false
+		emitter.patch(jumpAddr);
+
 		return null;
 	}
 

@@ -1,8 +1,8 @@
 /*
- * @(#)Compiler.java                       
- * 
+ * @(#)Compiler.java
+ *
  * Revisions and updates (c) 2022-2025 Sandy Brownlee. alexander.brownlee@stir.ac.uk
- * 
+ *
  * Original release:
  *
  * Copyright (C) 1999, 2003 D.A. Watt and D.F. Brown
@@ -18,11 +18,16 @@
 
 package triangle;
 
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 import triangle.abstractSyntaxTrees.Program;
 import triangle.codeGenerator.Emitter;
 import triangle.codeGenerator.Encoder;
 import triangle.contextualAnalyzer.Checker;
 import triangle.optimiser.ConstantFolder;
+import triangle.optimiser.StatisticsVisitor;
 import triangle.syntacticAnalyzer.Parser;
 import triangle.syntacticAnalyzer.Scanner;
 import triangle.syntacticAnalyzer.SourceFile;
@@ -31,13 +36,35 @@ import triangle.treeDrawer.Drawer;
 /**
  * The main driver class for the Triangle compiler.
  */
-public class Compiler {
+@Command(name = "tc",
+         mixinStandardHelpOptions = true,
+         version = "Triangle Compiler 2.1",
+         description = "Compiles Triangle source programs to TAM object code")
+public class Compiler implements Runnable {
 
-	/** The filename for the object program, normally obj.tam. */
-	static String objectName = "obj.tam";
-	
-	static boolean showTree = false;
-	static boolean folding = false;
+	@Parameters(index = "0", description = "The Triangle source file to compile")
+	private String sourceName;
+
+	@Option(names = {"-o", "--objectName"},
+	        description = "Output object file name (default: obj.tam)",
+	        defaultValue = "obj.tam")
+	private String objectName;
+
+	@Option(names = {"--showTree"},
+	        description = "Display the AST after contextual analysis")
+	private boolean showTree;
+
+	@Option(names = {"--folding"},
+	        description = "Enable constant folding optimization")
+	private boolean folding;
+
+	@Option(names = {"--showTreeAfter"},
+	        description = "Display the AST after folding is complete")
+	private boolean showTreeAfter;
+
+	@Option(names = {"--showStats"},
+	        description = "Display program statistics (expression counts)")
+	private boolean showStats;
 
 	private static Scanner scanner;
 	private static Parser parser;
@@ -60,10 +87,16 @@ public class Compiler {
 	 * @param showingTable true iff the object description details are to be
 	 *                     displayed during code generation (not currently
 	 *                     implemented).
+	 * @param enableFolding true iff constant folding optimization should be enabled
+	 * @param showingASTAfterFolding true iff the AST is to be displayed after
+	 *                     constant folding
+	 * @param showingStatistics true iff program statistics should be displayed
 	 * @return true iff the source program is free of compile-time errors, otherwise
 	 *         false.
 	 */
-	static boolean compileProgram(String sourceName, String objectName, boolean showingAST, boolean showingTable) {
+	static boolean compileProgram(String sourceName, String objectName, boolean showingAST,
+	                              boolean showingTable, boolean enableFolding, boolean showingASTAfterFolding,
+	                              boolean showingStatistics) {
 
 		System.out.println("********** " + "Triangle Compiler (Java Version 2.1)" + " **********");
 
@@ -94,10 +127,18 @@ public class Compiler {
 			if (showingAST) {
 				drawer.draw(theAST);
 			}
-			if (folding) {
-				theAST.visit(new ConstantFolder());
+			if (showingStatistics) {
+				StatisticsVisitor stats = new StatisticsVisitor();
+				stats.visitProgram(theAST);
+				stats.printStatistics();
 			}
-			
+			if (enableFolding) {
+				theAST.visit(new ConstantFolder());
+				if (showingASTAfterFolding) {
+					drawer.draw(theAST);
+				}
+			}
+
 			if (reporter.getNumErrors() == 0) {
 				System.out.println("Code Generation ...");
 				encoder.encodeRun(theAST, showingTable); // 3rd pass
@@ -117,37 +158,19 @@ public class Compiler {
 	/**
 	 * Triangle compiler main program.
 	 *
-	 * @param args the only command-line argument to the program specifies the
-	 *             source filename.
+	 * @param args command-line arguments parsed by picocli
 	 */
 	public static void main(String[] args) {
-
-		if (args.length < 1) {
-			System.out.println("Usage: tc filename [-o=outputfilename] [tree] [folding]");
-			System.exit(1);
-		}
-		
-		parseArgs(args);
-
-		String sourceName = args[0];
-		
-		var compiledOK = compileProgram(sourceName, objectName, showTree, false);
-
-		if (!showTree) {
-			System.exit(compiledOK ? 0 : 1);
-		}
+		int exitCode = new CommandLine(new Compiler()).execute(args);
+		System.exit(exitCode);
 	}
-	
-	private static void parseArgs(String[] args) {
-		for (String s : args) {
-			var sl = s.toLowerCase();
-			if (sl.equals("tree")) {
-				showTree = true;
-			} else if (sl.startsWith("-o=")) {
-				objectName = s.substring(3);
-			} else if (sl.equals("folding")) {
-				folding = true;
-			}
+
+	@Override
+	public void run() {
+		var compiledOK = compileProgram(sourceName, objectName, showTree, false, folding, showTreeAfter, showStats);
+
+		if (!compiledOK) {
+			throw new RuntimeException("Compilation failed");
 		}
 	}
 }
