@@ -41,6 +41,7 @@ import triangle.abstractSyntaxTrees.commands.Command;
 import triangle.abstractSyntaxTrees.commands.EmptyCommand;
 import triangle.abstractSyntaxTrees.commands.IfCommand;
 import triangle.abstractSyntaxTrees.commands.LetCommand;
+import triangle.abstractSyntaxTrees.commands.LoopWhileCommand;
 import triangle.abstractSyntaxTrees.commands.SequentialCommand;
 import triangle.abstractSyntaxTrees.commands.WhileCommand;
 import triangle.abstractSyntaxTrees.declarations.ConstDeclaration;
@@ -288,7 +289,22 @@ public class Parser {
 				finish(commandPos);
 				commandAST = new CallCommand(iAST, apsAST, commandPos);
 
-			} else {
+
+		} else if (currentToken.kind == Token.Kind.DOUBLESTAR) {
+			// Handle a**; as a := a * 2
+			acceptIt();  // consume **
+
+			// Create AST for: a := a * 2
+			SimpleVname vname = new SimpleVname(iAST, iAST.getPosition());
+			VnameExpression varExpr = new VnameExpression(vname, iAST.getPosition());
+			IntegerLiteral twoLit = new IntegerLiteral("2", iAST.getPosition());
+			IntegerExpression twoExpr = new IntegerExpression(twoLit, iAST.getPosition());
+			Operator times = new Operator("*", iAST.getPosition());
+			BinaryExpression mult = new BinaryExpression(varExpr, times, twoExpr, iAST.getPosition());
+
+			finish(commandPos);
+			commandAST = new AssignCommand(vname, mult, commandPos);
+		} else {
 
 				Vname vAST = parseRestOfVname(iAST);
 				accept(Token.Kind.BECOMES);
@@ -334,6 +350,18 @@ public class Parser {
 			Command cAST = parseSingleCommand();
 			finish(commandPos);
 			commandAST = new WhileCommand(eAST, cAST, commandPos);
+		}
+			break;
+
+		case LOOP: {
+			acceptIt();
+			Command c1AST = parseSingleCommand();
+			accept(Token.Kind.WHILE);
+			Expression eAST = parseExpression();
+			accept(Token.Kind.DO);
+			Command c2AST = parseSingleCommand();
+			finish(commandPos);
+			commandAST = new LoopWhileCommand(c1AST, eAST, c2AST, commandPos);
 		}
 			break;
 

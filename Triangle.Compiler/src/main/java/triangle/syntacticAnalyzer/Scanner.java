@@ -165,9 +165,18 @@ public final class Scanner {
 				takeIt();
 			return Token.Kind.INTLITERAL;
 
+		case '*':
+			takeIt();
+			if (currentChar == '*') {
+				takeIt();
+				return Token.Kind.DOUBLESTAR;
+			}
+			while (isOperator(currentChar))
+				takeIt();
+			return Token.Kind.OPERATOR;
+
 		case '+':
 		case '-':
-		case '*':
 		case '/':
 		case '=':
 		case '<':
@@ -234,11 +243,11 @@ public final class Scanner {
 
 		case '{':
 			takeIt();
-			return Token.Kind.LCURLY;
+			return Token.Kind.BEGIN;  // Treat { as BEGIN
 
 		case '}':
 			takeIt();
-			return Token.Kind.RCURLY;
+			return Token.Kind.END;    // Treat } as END
 
 		case SourceFile.EOT:
 			return Token.Kind.EOT;
