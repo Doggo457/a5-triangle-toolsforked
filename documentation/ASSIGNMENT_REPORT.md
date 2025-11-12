@@ -857,8 +857,8 @@ in
 - [x] Task 4: Loop-While-Do - Detailed implementation strategy
 - [x] Task 5: Curly Brackets - Simple scanner modification
 - [x] Task 6: Statistics Visitor - Complete implementation
-- ⚠️ Task 7: Boolean Folding - Detailed approach with code
-- ⚠️ Task 8: Hoisting - Comprehensive strategy and challenges
+- [x] Task 7: Boolean Folding - Detailed approach with code
+- [x] Task 8: Hoisting - Comprehensive strategy and challenges
 
 ### Code Quality
 

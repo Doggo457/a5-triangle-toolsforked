@@ -1,0 +1,10 @@
+! Test program using curly brackets instead of begin/end
+let
+    var x: Integer
+in {
+    x := 0;
+    while x < 10 do {
+        putint(x);
+        x := x + 1
+    }
+}
